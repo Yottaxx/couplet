@@ -1,7 +1,7 @@
 import argparse
 
 
-def getArgs():
+def getArgsLM():
     parser = argparse.ArgumentParser()
 
     ## Required parameters

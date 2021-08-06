@@ -5,17 +5,22 @@ from transformers import get_linear_schedule_with_warmup
 import nltk.translate.bleu_score as bleu
 from model.seq2seq import Seq2SeqBaseModel
 from utils.args import getArgs
+from utils.argsLM import getArgsLM
 from utils.dataset import CustomDataset
 from utils.process import encode, decode, getData
 from utils.tools import getVocab
 import torch.nn as nn
 
-args = getArgs()
+#对联
+#args = getArgs()
+#古诗
+args = getArgsLM()
+
 best_bleu = 0
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 word2id, id2word = getVocab(path="./resources/couplet/vocabs")
 
-data = getData(dataPathIn='./resources/couplet/train/in.txt', dataPathOut='./resources/couplet/train/out.txt',
+data = getData(dataPathIn='./resources/poem/train/in.txt', dataPathOut='./resources/poem/train/out.txt',
                word2id=word2id, id2word=id2word)
 dataDev = getData(dataPathIn='./resources/couplet/test/in.txt', dataPathOut='./resources/couplet/test/out.txt',
                   word2id=word2id, id2word=id2word)
@@ -33,7 +38,7 @@ dataloaderDev = DataLoader(devDataset, batch_size=args.eval_batch_size, shuffle=
 model = Seq2SeqBaseModel(vocab_size=len(word2id), embedding_dim=args.embedding_dim, hidden_dim=args.hidden_dim, num_layers=args.num_layers, dropout=args.dropout)
 model.to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-scheduler = get_linear_schedule_with_warmup(optimizer, len(dataloader), 10 * len(dataloader))
+scheduler = get_linear_schedule_with_warmup(optimizer, len(dataloader), args.num_train_epochs * len(dataloader))
 
 
 class AverageMeter:  # 为了tqdm实时显示loss和acc
@@ -131,6 +136,9 @@ def bleu_score(predict, target):
 
 
 if __name__ == "__main__":
-    model.load_state_dict(torch.load("./checkpoint/seq2seq0.25816018783153544.pt",map_location=device))
+    #古诗
+    model.load_state_dict(torch.load("./checkpoint/poemSeq2Seq.pt",map_location=device))
+    # 对联
+    # model.load_state_dict(torch.load("./checkpoint/seq2seq0.25816018783153544.pt",map_location=device))
     generate("瑟批")
     # train()

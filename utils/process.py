@@ -1,3 +1,4 @@
+import random
 from typing import List
 
 
@@ -31,9 +32,13 @@ def getData(dataPathIn='../resources/couplet/test/in.txt', dataPathOut='../resou
     dataInput = []
     dataLabel = []
     for i in range(len(dataIn)):
-        input = dataIn[i][0][0] + dataOut[i][0][0]
+        # if "poem" in dataPathIn:
+        # seq = random.randint(0, 5)
+        input = dataIn[i][0][0]
+        # else:
+        #     input = dataIn[i][0][0] + dataOut[i][0][0]
         if "poem" in dataPathIn:
-            label = dataIn[i][0] + ',' + dataOut[i][0]+'。'
+            label = dataIn[i][0] + ',' + dataOut[i][0] + '。'
         else:
             label = dataIn[i][0] + '。' + dataOut[i][0]
         dataInput.append(input)

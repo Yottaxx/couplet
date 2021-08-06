@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from model.lm import top5
+
+
 class Seq2SeqBaseModel(nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim, num_layers, dropout=0.1):
         super(Seq2SeqBaseModel, self).__init__()
@@ -54,7 +57,8 @@ class Seq2SeqBaseModel(nn.Module):
             # wordOutput 1*1*vocab
             probList.append(wordOutput)
             # wordOutput 1*1
-            wordOutput = wordOutput.argmax(dim=-1)
+            # wordOutput = wordOutput.argmax(dim=-1)
+            wordOutput = top5(wordOutput)
             predictList.append(wordOutput.squeeze().item())
             if predictList[-1] == eos:
                 break

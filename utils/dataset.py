@@ -1,5 +1,4 @@
 import os
-import jieba
 import torch
 import collections
 import numpy as np
