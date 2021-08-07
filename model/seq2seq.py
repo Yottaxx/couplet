@@ -38,15 +38,18 @@ class Seq2SeqBaseModel(nn.Module):
 
         return output
 
-    def generate(self, inputs, maxLen, bos=torch.tensor([[1]]), eos=2):
+    def generate(self, inputs, maxLen=64, bos=torch.tensor([[1]]), eos=2, begin_inputs=None):
         predictList = []
         probList = []
+
         inputsEmbeds = self.embLinear(F.relu(self.dropout(self.embeddings(inputs))))
         output, hidden = self.encoder(inputsEmbeds)
         # eos 1*1
+
         output = self.embLinear(F.relu(self.dropout(self.embeddings(bos.to(inputs.device)))))
         # print("out", output.shape)
         # eos 1*1*emb
+
         for i in range(maxLen):
             # print(i)
             # print(hidden[0].shape)
@@ -58,8 +61,12 @@ class Seq2SeqBaseModel(nn.Module):
             probList.append(wordOutput)
             # wordOutput 1*1
             # wordOutput = wordOutput.argmax(dim=-1)
-            wordOutput = top5(wordOutput)
-            predictList.append(wordOutput.squeeze().item())
+            if len(predictList) == 0 and begin_inputs is not None:
+                predictList.append(begin_inputs.squeeze().item())
+                wordOutput = begin_inputs
+            else:
+                wordOutput = top5(wordOutput)
+                predictList.append(wordOutput.squeeze().item())
             if predictList[-1] == eos:
                 break
             output = self.embLinear(F.relu(self.dropout(self.embeddings(wordOutput))))

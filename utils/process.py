@@ -34,15 +34,17 @@ def getData(dataPathIn='../resources/couplet/test/in.txt', dataPathOut='../resou
     for i in range(len(dataIn)):
         # if "poem" in dataPathIn:
         # seq = random.randint(0, 5)
-        input = dataIn[i][0][0]
-        # else:
-        #     input = dataIn[i][0][0] + dataOut[i][0][0]
+        if 'poem' in dataPathIn:
+            input = dataIn[i][0]
+        else:
+            input = dataIn[i][0][0] + dataOut[i][0][0]
         if "poem" in dataPathIn:
-            label = dataIn[i][0] + ',' + dataOut[i][0] + '。'
+            label = dataOut[i][0]
         else:
             label = dataIn[i][0] + '。' + dataOut[i][0]
         dataInput.append(input)
         dataLabel.append(label)
+
 
     assert len(dataInput) == len(dataLabel)
     dataInputIdx = []

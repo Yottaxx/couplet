@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 def top5(output):
     device = output.device
-    output = output.topk(5)
+    output = output.topk(10)
     value = output[0].softmax(dim=-1).squeeze().cumsum(dim=-1).cpu().tolist()
 
     indices = output[1].squeeze().cpu().tolist()

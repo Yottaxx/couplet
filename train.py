@@ -11,9 +11,9 @@ from utils.process import encode, decode, getData
 from utils.tools import getVocab
 import torch.nn as nn
 
-#对联
-#args = getArgs()
-#古诗
+# 对联
+# args = getArgs()
+# 古诗
 args = getArgsLM()
 
 best_bleu = 0
@@ -35,7 +35,8 @@ dataloader = DataLoader(trainDataset, batch_size=args.train_batch_size, shuffle=
 dataloaderDev = DataLoader(devDataset, batch_size=args.eval_batch_size, shuffle=False,
                            collate_fn=trainDataset.collate_fn)
 
-model = Seq2SeqBaseModel(vocab_size=len(word2id), embedding_dim=args.embedding_dim, hidden_dim=args.hidden_dim, num_layers=args.num_layers, dropout=args.dropout)
+model = Seq2SeqBaseModel(vocab_size=len(word2id), embedding_dim=args.embedding_dim, hidden_dim=args.hidden_dim,
+                         num_layers=args.num_layers, dropout=args.dropout)
 model.to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 scheduler = get_linear_schedule_with_warmup(optimizer, len(dataloader), args.num_train_epochs * len(dataloader))
@@ -80,29 +81,50 @@ def train():
             loss.backward()
             clip = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             clips.update(clip.item(), logits.size(0))
-            tk.set_postfix(loss=losses.avg,clips = clips.avg)
+            tk.set_postfix(loss=losses.avg, clips=clips.avg)
 
             optimizer.step()
             optimizer.zero_grad()
             scheduler.step()
 
-        bleu_score =  eval()
+        bleu_score = eval()
         if bleu_score > best_bleu:
             best_bleu = bleu_score
+            # torch.save(model.state_dict(),
+            #            "bsz" + str(args.train_batch_size) + "ed" + str(args.embedding_dim) + "tb" + str(
+            #                args.train_batch_size) + "hd" + str(args.hidden_dim) + "bs" + str(
+            #                args.num_layers) + "lr" + str(args.learning_rate) + 'seq2seqPoem{}.pt'.format(best_bleu))
             torch.save(model.state_dict(),
-                       "bsz"+str(args.train_batch_size)+"ed"+str(args.embedding_dim)+"tb"+str(args.train_batch_size)+"hd"+str(args.hidden_dim)+"bs"+str(args.num_layers)+"lr"+str(args.learning_rate)+'seq2seqPoem{}.pt'.format(best_bleu))
+                       'seq2seqPoem{}.pt'.format(best_bleu))
 
         generate("你好")
         generate("小王")
 
 
-def generate(inputs):
+def generate(inputs=None):
     model.eval()
     with torch.no_grad():
+        if inputs == '' or inputs is None:
+            inputs = torch.tensor(encode("随机生成", word2id)).unsqueeze(dim=0).to(device)
+            predictList, prbList = model.generate(inputs, maxLen=64)
+        else:
+            inputs = torch.tensor(encode(inputs, word2id)).unsqueeze(dim=0).to(device)
+            predictList, prbList = model.generate(inputs, maxLen=64)
+        # print(predictList)
+        generateStr = decode(predictList, id2word)
+        # print(generateStr)
+    return generateStr
+
+def generateCouplet(inputs):
+    model.eval()
+    with torch.no_grad():
+
         inputs = torch.tensor(encode(inputs, word2id)).unsqueeze(dim=0).to(device)
         predictList, prbList = model.generate(inputs, maxLen=64)
-        print(predictList)
-        print(decode(predictList, id2word))
+        # print(predictList)
+        generateStr = decode(predictList, id2word)
+        # print(generateStr)
+    return generateStr
 
 
 def eval():
@@ -129,16 +151,29 @@ def eval():
             tk.set_postfix(bleu=bleu.avg)
     return bleu.avg
 
+
 def bleu_score(predict, target):
     predict = [item for item in predict]
     target = [item for item in target]
     return bleu.sentence_bleu(predict, target, weights=[1])
 
+def generateTangshi():
+    result = []
+    last = ''
+    while len(result) < 8:
+        if len(result) % 2 == 0:
+            result.append(generate(last) + ',')
+            last = result[-1][:-1]
+        else:
+            result.append(generate(last) + '。')
+            last = result[-1][:-1]
+    for i in range(len(result)):
+        print(result[i])
 
 if __name__ == "__main__":
-    #古诗
-    model.load_state_dict(torch.load("./checkpoint/poemSeq2Seq.pt",map_location=device))
-    # 对联
-    # model.load_state_dict(torch.load("./checkpoint/seq2seq0.25816018783153544.pt",map_location=device))
-    generate("瑟批")
+    # 古诗
+    model.load_state_dict(torch.load("./checkpoint/seq2seqLMpoem.pt", map_location=device))
+    # # 对联
+    # # model.load_state_dict(torch.load("./checkpoint/seq2seq0.25816018783153544.pt",map_location=device))
+    generateTangshi()
     # train()
