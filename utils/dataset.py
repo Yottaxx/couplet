@@ -25,6 +25,9 @@ class CustomDataset(Dataset):
         return [self.data[0][idx], self.data[1][idx]]
 
     def collate_fn(self, batch):
+
+        # [2] [2]
+        # [10 + [0] * 10]  === [20]
         # used in sequence labeling task
         tensor_in = []
         tensor_decoder = []
