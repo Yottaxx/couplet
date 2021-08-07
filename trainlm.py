@@ -98,8 +98,11 @@ def train():
 def generate(inputs):
     model.eval()
     with torch.no_grad():
-        inputs = torch.tensor(encode(inputs, word2id)[1:-1]).unsqueeze(dim=0).to(device)
+        inputs = torch.tensor(encode(inputs, word2id)).unsqueeze(dim=0).to(device)
         predictList, prbList = model.generate(inputs, maxLen=64)
+        if len(predictList) < 5:
+            generate(inputs)
+            return
         print(predictList)
         print(decode(predictList, id2word))
 

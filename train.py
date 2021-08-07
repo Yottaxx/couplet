@@ -115,10 +115,10 @@ def generate(inputs=None):
         # print(generateStr)
     return generateStr
 
+
 def generateCouplet(inputs):
     model.eval()
     with torch.no_grad():
-
         inputs = torch.tensor(encode(inputs, word2id)).unsqueeze(dim=0).to(device)
         predictList, prbList = model.generate(inputs, maxLen=64)
         # print(predictList)
@@ -157,6 +157,7 @@ def bleu_score(predict, target):
     target = [item for item in target]
     return bleu.sentence_bleu(predict, target, weights=[1])
 
+
 def generateTangshi():
     result = []
     last = ''
@@ -169,6 +170,34 @@ def generateTangshi():
             last = result[-1][:-1]
     for i in range(len(result)):
         print(result[i])
+
+
+def generateCangtou(begin_inputs="你", inputs="随机生成"):
+    model.eval()
+    with torch.no_grad():
+        inputs = torch.tensor(encode(inputs, word2id)).unsqueeze(dim=0).to(device)
+        predictList, prbList = model.generate(inputs, maxLen=64,
+                                              begin_inputs=torch.tensor([word2id[begin_inputs]]).unsqueeze(dim=0).to(
+                                                  device))
+        # print(predictList)
+        generateStr = decode(predictList, id2word)
+        # print(generateStr)
+    return generateStr
+
+
+def generateCangtouShi(begin_inputs="你好中国"):
+    result = []
+    last = '随机生成'
+    for i in range(len(begin_inputs)):
+        if len(result) % 2 == 0:
+            result.append(generateCangtou(inputs=last, begin_inputs=begin_inputs[i]) + ',')
+            last = result[-1][:-1]
+        else:
+            result.append(generateCangtou(inputs=last, begin_inputs=begin_inputs[i]) + '。')
+            last = result[-1][:-1]
+    for i in range(len(result)):
+        print(result[i])
+
 
 if __name__ == "__main__":
     # 古诗

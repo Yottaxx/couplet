@@ -38,6 +38,7 @@ def getData(dataPathIn='../resources/couplet/test/in.txt', dataPathOut='../resou
             input = dataIn[i][0]
         else:
             input = dataIn[i][0][0] + dataOut[i][0][0]
+
         if "poem" in dataPathIn:
             label = dataOut[i][0]
         else:
